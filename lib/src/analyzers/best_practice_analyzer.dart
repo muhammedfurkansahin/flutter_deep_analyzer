@@ -67,8 +67,7 @@ class BestPracticeAnalyzer extends BaseAnalyzer {
             filePath: filePath,
             line: i + 1,
             codeSnippet: line,
-            suggestion:
-                'print() yerine bir Logger paketi (ör: logger, logging) kullanın. '
+            suggestion: 'print() yerine bir Logger paketi (ör: logger, logging) kullanın. '
                 'debug/release modlarına göre log seviyesi kontrol edilebilir.',
           ),
         );
@@ -100,13 +99,11 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
             ruleId: 'bp-mutable-global',
             severity: Severity.warning,
             category: IssueCategory.bestPractice,
-            message:
-                'Global mutable değişken: "${variable.name.lexeme}". '
+            message: 'Global mutable değişken: "${variable.name.lexeme}". '
                 'Global state yönetimi sorunlara yol açabilir.',
             filePath: filePath,
             line: _getLineNumber(variable.name.offset),
-            suggestion:
-                'Global değişkeni final/const yapın veya bir state management '
+            suggestion: 'Global değişkeni final/const yapın veya bir state management '
                 'çözümü kullanın (Riverpod, Bloc, vb.).',
           ),
         );
@@ -118,6 +115,7 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
   @override
   void visitClassDeclaration(ClassDeclaration node) {
     // Public class dökümantasyon kontrolü
+    // ignore: deprecated_member_use
     final className = node.name.lexeme;
     if (!className.startsWith('_') && node.documentationComment == null) {
       issues.add(
@@ -127,6 +125,7 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
           category: IssueCategory.bestPractice,
           message: 'Public sınıf "$className" dökümantasyon yorumu içermiyor.',
           filePath: filePath,
+          // ignore: deprecated_member_use
           line: _getLineNumber(node.name.offset),
           suggestion: '/// ile sınıfın amacını açıklayan bir dökümantasyon ekleyin.',
         ),
@@ -142,6 +141,7 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
           category: IssueCategory.bestPractice,
           message: 'Sınıf ismi "$className" PascalCase formatında olmalı.',
           filePath: filePath,
+          // ignore: deprecated_member_use
           line: _getLineNumber(node.name.offset),
           suggestion: 'Sınıf isimlerini PascalCase ile yazın (ör: MyClassName).',
         ),
@@ -204,8 +204,7 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
           ruleId: 'bp-avoid-dynamic',
           severity: Severity.warning,
           category: IssueCategory.bestPractice,
-          message:
-              'Parametre "${node.name?.lexeme ?? 'unknown'}" dynamic olarak tanımlanmış. '
+          message: 'Parametre "${node.name?.lexeme ?? 'unknown'}" dynamic olarak tanımlanmış. '
               'Tip güvenliği için spesifik tip kullanın.',
           filePath: filePath,
           line: _getLineNumber(node.offset),
@@ -229,8 +228,7 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
             ruleId: 'bp-avoid-dynamic',
             severity: Severity.warning,
             category: IssueCategory.bestPractice,
-            message:
-                'Değişken "${node.name.lexeme}" dynamic olarak tanımlanmış. '
+            message: 'Değişken "${node.name.lexeme}" dynamic olarak tanımlanmış. '
                 'Tip güvenliği için spesifik tip kullanın.',
             filePath: filePath,
             line: _getLineNumber(node.name.offset),

@@ -93,14 +93,12 @@ class SecurityAnalyzer extends BaseAnalyzer {
               ruleId: 'sec-hardcoded-secret',
               severity: Severity.error,
               category: IssueCategory.security,
-              message:
-                  'Potansiyel hardcoded secret/API key tespit edildi. '
+              message: 'Potansiyel hardcoded secret/API key tespit edildi. '
                   'Secrets\'ları environment variable veya güvenli depolama ile yönetin.',
               filePath: filePath,
               line: i + 1,
               codeSnippet: _maskSecret(line.trim()),
-              suggestion:
-                  'flutter_dotenv paketi veya Platform.environment kullanarak '
+              suggestion: 'flutter_dotenv paketi veya Platform.environment kullanarak '
                   'secrets\'ları env variable olarak yönetin. '
                   'Mobilde flutter_secure_storage kullanın.',
             ),
@@ -152,8 +150,7 @@ class SecurityAnalyzer extends BaseAnalyzer {
                   'dart:mirrors kullanımı güvenlik riski oluşturur ve Flutter\'da desteklenmez.',
               filePath: filePath,
               line: 1,
-              suggestion:
-                  'dart:mirrors yerine code generation (build_runner) veya '
+              suggestion: 'dart:mirrors yerine code generation (build_runner) veya '
                   'manuel reflection alternatifleri kullanın.',
             ),
           );
@@ -189,7 +186,7 @@ class _SecurityVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    final typeName = node.constructorName.type.name2.lexeme;
+    final typeName = node.constructorName.type.name.lexeme;
 
     // Güvensiz Random kullanımı
     if (typeName == 'Random') {
@@ -227,13 +224,11 @@ class _SecurityVisitor extends RecursiveAstVisitor<void> {
               ruleId: 'sec-insecure-storage',
               severity: Severity.warning,
               category: IssueCategory.security,
-              message:
-                  'SharedPreferences\'da hassas veri saklanıyor olabilir. '
+              message: 'SharedPreferences\'da hassas veri saklanıyor olabilir. '
                   'flutter_secure_storage kullanın.',
               filePath: filePath,
               line: _getLineNumber(node.offset),
-              suggestion:
-                  'Hassas veriler için flutter_secure_storage veya platform '
+              suggestion: 'Hassas veriler için flutter_secure_storage veya platform '
                   'keychain/keystore kullanın.',
             ),
           );

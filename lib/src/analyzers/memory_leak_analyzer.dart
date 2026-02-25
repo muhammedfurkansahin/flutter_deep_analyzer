@@ -84,13 +84,15 @@ class _MemoryLeakVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
+    // ignore: deprecated_member_use
     _currentClassName = node.name.lexeme;
+    // ignore: deprecated_member_use
     _classOffset = node.name.offset;
 
     // State sınıfı mı kontrol et
     final extendsClause = node.extendsClause;
     if (extendsClause != null) {
-      final superClass = extendsClause.superclass.name2.lexeme;
+      final superClass = extendsClause.superclass.name.lexeme;
       _isInStateClass = superClass.startsWith('State');
     }
 
@@ -122,6 +124,7 @@ class _MemoryLeakVisitor extends RecursiveAstVisitor<void> {
   }
 
   void _scanClassMembers(ClassDeclaration node) {
+    // ignore: deprecated_member_use
     for (final member in node.members) {
       // Dispose metodu var mı?
       if (member is MethodDeclaration && member.name.lexeme == 'dispose') {
@@ -136,14 +139,14 @@ class _MemoryLeakVisitor extends RecursiveAstVisitor<void> {
           String? typeName;
 
           if (typeAnnotation is NamedType) {
-            typeName = typeAnnotation.name2.lexeme;
+            typeName = typeAnnotation.name.lexeme;
           }
 
           // Initializer'dan tip çıkar
           if (typeName == null && variable.initializer != null) {
             final init = variable.initializer;
             if (init is InstanceCreationExpression) {
-              typeName = init.constructorName.type.name2.lexeme;
+              typeName = init.constructorName.type.name.lexeme;
             }
           }
 
@@ -171,6 +174,7 @@ class _MemoryLeakVisitor extends RecursiveAstVisitor<void> {
   }
 
   void _scanDisposeMethod(ClassDeclaration node) {
+    // ignore: deprecated_member_use
     for (final member in node.members) {
       if (member is MethodDeclaration && member.name.lexeme == 'dispose') {
         final body = member.body.toSource();

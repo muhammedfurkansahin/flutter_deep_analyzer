@@ -1,6 +1,7 @@
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/dart/element/type.dart';
 
 import '../config/analyzer_config.dart';
 import '../models/issue.dart';
@@ -108,8 +109,11 @@ class _ArchitectureVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
+    // ignore: deprecated_member_use
     final className = node.name.lexeme;
+    // ignore: deprecated_member_use
     final methods = node.members.whereType<MethodDeclaration>().toList();
+    // ignore: deprecated_member_use
     final fields = node.members.whereType<FieldDeclaration>().toList();
 
     // God class kontrolü
@@ -124,6 +128,7 @@ class _ArchitectureVisitor extends RecursiveAstVisitor<void> {
               '"$className" sınıfı God class olabilir: ${methods.length} metod (eşik: $godClassThreshold). '
               'Sınıfı daha küçük, tek sorumluluk ilkesine uygun sınıflara bölmeyi düşünün.',
           filePath: filePath,
+          // ignore: deprecated_member_use
           line: node.name.offset,
           suggestion:
               'Single Responsibility Principle uygulayın. Sınıfı sorumluluk alanlarına göre bölün.',
@@ -141,6 +146,7 @@ class _ArchitectureVisitor extends RecursiveAstVisitor<void> {
           message: '"$className" sınıfında çok fazla alan var: ${fields.length}. '
               'Bu, sınıfın çok fazla sorumluluğa sahip olduğunu gösterebilir.',
           filePath: filePath,
+          // ignore: deprecated_member_use
           line: node.name.offset,
           suggestion: 'İlişkili alanları ayrı sınıflara veya value object\'lere taşıyın.',
         ),
@@ -148,6 +154,7 @@ class _ArchitectureVisitor extends RecursiveAstVisitor<void> {
     }
 
     // Constructor parametre sayısı kontrolü
+    // ignore: deprecated_member_use
     for (final member in node.members) {
       if (member is ConstructorDeclaration) {
         final paramCount = member.parameters.parameters.length;
@@ -177,21 +184,18 @@ class _ArchitectureVisitor extends RecursiveAstVisitor<void> {
   }
 
   void _checkInheritanceDepth(ClassDeclaration node, String className) {
-    // ignore: deprecated_member_use
-    final element = node.declaredElement;
-    if (element == null) return;
+    final fragment = node.declaredFragment;
+    if (fragment == null) return;
+    final element = fragment.element;
 
     var depth = 0;
-    // ignore: deprecated_member_use
-    var current = element.supertype;
+    InterfaceType? current = element.supertype;
     final maxDepth = config.getThreshold('architecture', 'max_inheritance_depth', 3);
 
     while (current != null) {
-      // ignore: deprecated_member_use
-      final name = current.element.name;
-      if (name == 'Object') break;
+      final typeName = current.element.name;
+      if (typeName == 'Object') break;
       depth++;
-      // ignore: deprecated_member_use
       current = current.element.supertype;
     }
 
@@ -205,6 +209,7 @@ class _ArchitectureVisitor extends RecursiveAstVisitor<void> {
               '"$className" sınıfı derin bir kalıtım zincirine sahip: $depth seviye (eşik: $maxDepth). '
               'Composition over inheritance tercih edin.',
           filePath: filePath,
+          // ignore: deprecated_member_use
           line: node.name.offset,
           suggestion:
               'Kalıtım yerine composition (mixin veya delegation) kullanmayı değerlendirin.',

@@ -54,7 +54,9 @@ class _CodeQualityVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
+    // ignore: deprecated_member_use
     final className = node.name.lexeme;
+    // ignore: deprecated_member_use
     final methods = node.members.whereType<MethodDeclaration>().toList();
 
     // Çok fazla metod kontrolü
@@ -68,6 +70,7 @@ class _CodeQualityVisitor extends RecursiveAstVisitor<void> {
           message:
               '"$className" sınıfında çok fazla metod var: ${methods.length} (eşik: $maxMethods).',
           filePath: filePath,
+          // ignore: deprecated_member_use
           line: _getLineNumber(node.name.offset),
           suggestion: 'Sınıfı daha küçük, tek sorumluluklu sınıflara bölmeyi düşünün.',
         ),

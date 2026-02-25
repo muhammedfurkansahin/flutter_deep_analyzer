@@ -61,7 +61,7 @@ class _RaceConditionVisitor extends RecursiveAstVisitor<void> {
     // State sınıfı mı kontrol et
     final extendsClause = node.extendsClause;
     if (extendsClause != null) {
-      final superClass = extendsClause.superclass.name2.lexeme;
+      final superClass = extendsClause.superclass.name.lexeme;
       _isInStatefulWidget = superClass.startsWith('State');
     }
 
@@ -119,7 +119,7 @@ class _RaceConditionVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    final typeName = node.constructorName.type.name2.lexeme;
+    final typeName = node.constructorName.type.name.lexeme;
 
     // Completer yanlış kullanım kontrolü
     if (typeName == 'Completer') {
