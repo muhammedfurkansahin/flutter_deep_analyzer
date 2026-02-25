@@ -4,9 +4,9 @@ description: >-
   Analyzes architecture, code quality, best practices, security vulnerabilities,
   race conditions, performance issues, and memory leaks with scoring system.
 version: 0.1.0
-repository: https://github.com/user/flutter_deep_analyzer
-homepage: https://github.com/user/flutter_deep_analyzer
-issue_tracker: https://github.com/user/flutter_deep_analyzer/issues
+repository: https://github.com/muhammedfurkansahin/flutter_deep_analyzer
+homepage: https://github.com/muhammedfurkansahin/flutter_deep_analyzer
+issue_tracker: https://github.com/muhammedfurkansahin/flutter_deep_analyzer/issues
 topics:
   - analyzer
   - linter
