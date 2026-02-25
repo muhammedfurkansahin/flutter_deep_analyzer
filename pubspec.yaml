@@ -2,7 +2,7 @@ name: flutter_deep_analyzer
 description: >-
   A comprehensive static analysis tool for Flutter/Dart projects. Analyzes architecture,
   code quality, security, performance, and memory leaks.
-version: 0.1.0
+version: 1.0.0
 repository: https://github.com/muhammedfurkansahin/flutter_deep_analyzer
 homepage: https://github.com/muhammedfurkansahin/flutter_deep_analyzer
 issue_tracker: https://github.com/muhammedfurkansahin/flutter_deep_analyzer/issues
