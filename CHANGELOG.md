@@ -20,3 +20,6 @@
 - CLI with category filtering and configurable thresholds
 - YAML-based configuration via `analysis_options.yaml`
 
+## 1.0.1
+
+- Fix analyzer version
