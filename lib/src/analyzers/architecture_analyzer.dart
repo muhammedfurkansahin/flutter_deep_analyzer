@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/type.dart';
 
 import '../config/analyzer_config.dart';
 import '../models/issue.dart';
+import '../utils/analyzer_utils.dart';
 import 'base_analyzer.dart';
 
 /// Mimari Analyzer
@@ -184,9 +185,8 @@ class _ArchitectureVisitor extends RecursiveAstVisitor<void> {
   }
 
   void _checkInheritanceDepth(ClassDeclaration node, String className) {
-    final fragment = node.declaredFragment;
-    if (fragment == null) return;
-    final element = fragment.element;
+    final element = node.classElement;
+    if (element == null) return;
 
     var depth = 0;
     InterfaceType? current = element.supertype;

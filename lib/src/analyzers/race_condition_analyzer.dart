@@ -4,6 +4,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 
 import '../config/analyzer_config.dart';
 import '../models/issue.dart';
+import '../utils/analyzer_utils.dart';
 import 'base_analyzer.dart';
 
 /// Race Condition Analyzer
@@ -61,7 +62,7 @@ class _RaceConditionVisitor extends RecursiveAstVisitor<void> {
     // State sınıfı mı kontrol et
     final extendsClause = node.extendsClause;
     if (extendsClause != null) {
-      final superClass = extendsClause.superclass.name.lexeme;
+      final superClass = extendsClause.superclass.nameString;
       _isInStatefulWidget = superClass.startsWith('State');
     }
 
@@ -96,7 +97,7 @@ class _RaceConditionVisitor extends RecursiveAstVisitor<void> {
     if (expression is MethodInvocation) {
       final returnType = expression.staticType;
       if (returnType != null) {
-        final typeName = returnType.getDisplayString();
+        final typeName = returnType.displayString;
         if (typeName.startsWith('Future') && !_isAwaited(node)) {
           issues.add(
             Issue(
@@ -119,7 +120,7 @@ class _RaceConditionVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    final typeName = node.constructorName.type.name.lexeme;
+    final typeName = node.constructorName.type.nameString;
 
     // Completer yanlış kullanım kontrolü
     if (typeName == 'Completer') {

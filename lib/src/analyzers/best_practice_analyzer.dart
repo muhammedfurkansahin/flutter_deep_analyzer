@@ -4,6 +4,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 
 import '../config/analyzer_config.dart';
 import '../models/issue.dart';
+import '../utils/analyzer_utils.dart';
 import 'base_analyzer.dart';
 
 /// Best Practice Analyzer
@@ -99,7 +100,7 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
             ruleId: 'bp-mutable-global',
             severity: Severity.warning,
             category: IssueCategory.bestPractice,
-            message: 'Global mutable değişken: "${variable.name.lexeme}". '
+            message: 'Global mutable değişken: "${variable.nodeName}". '
                 'Global state yönetimi sorunlara yol açabilir.',
             filePath: filePath,
             line: _getLineNumber(variable.name.offset),
@@ -116,7 +117,7 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
   void visitClassDeclaration(ClassDeclaration node) {
     // Public class dökümantasyon kontrolü
     // ignore: deprecated_member_use
-    final className = node.name.lexeme;
+    final className = node.nodeName;
     if (!className.startsWith('_') && node.documentationComment == null) {
       issues.add(
         Issue(
@@ -153,7 +154,7 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
-    final methodName = node.name.lexeme;
+    final methodName = node.nodeName;
 
     // Public method dökümantasyon kontrolü
     if (!methodName.startsWith('_') && node.documentationComment == null) {
@@ -204,7 +205,8 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
           ruleId: 'bp-avoid-dynamic',
           severity: Severity.warning,
           category: IssueCategory.bestPractice,
-          message: 'Parametre "${node.name?.lexeme ?? 'unknown'}" dynamic olarak tanımlanmış. '
+          message:
+              'Parametre "${node.nodeName.isEmpty ? 'unknown' : node.nodeName}" dynamic olarak tanımlanmış. '
               'Tip güvenliği için spesifik tip kullanın.',
           filePath: filePath,
           line: _getLineNumber(node.offset),
@@ -228,7 +230,7 @@ class _BestPracticeVisitor extends RecursiveAstVisitor<void> {
             ruleId: 'bp-avoid-dynamic',
             severity: Severity.warning,
             category: IssueCategory.bestPractice,
-            message: 'Değişken "${node.name.lexeme}" dynamic olarak tanımlanmış. '
+            message: 'Değişken "${node.nodeName}" dynamic olarak tanımlanmış. '
                 'Tip güvenliği için spesifik tip kullanın.',
             filePath: filePath,
             line: _getLineNumber(node.name.offset),

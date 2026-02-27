@@ -4,6 +4,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 
 import '../config/analyzer_config.dart';
 import '../models/issue.dart';
+import '../utils/analyzer_utils.dart';
 import 'base_analyzer.dart';
 
 /// Bellek Sızıntısı Analyzer
@@ -92,7 +93,7 @@ class _MemoryLeakVisitor extends RecursiveAstVisitor<void> {
     // State sınıfı mı kontrol et
     final extendsClause = node.extendsClause;
     if (extendsClause != null) {
-      final superClass = extendsClause.superclass.name.lexeme;
+      final superClass = extendsClause.superclass.nameString;
       _isInStateClass = superClass.startsWith('State');
     }
 
@@ -139,14 +140,14 @@ class _MemoryLeakVisitor extends RecursiveAstVisitor<void> {
           String? typeName;
 
           if (typeAnnotation is NamedType) {
-            typeName = typeAnnotation.name.lexeme;
+            typeName = typeAnnotation.nameString;
           }
 
           // Initializer'dan tip çıkar
           if (typeName == null && variable.initializer != null) {
             final init = variable.initializer;
             if (init is InstanceCreationExpression) {
-              typeName = init.constructorName.type.name.lexeme;
+              typeName = init.constructorName.type.nameString;
             }
           }
 

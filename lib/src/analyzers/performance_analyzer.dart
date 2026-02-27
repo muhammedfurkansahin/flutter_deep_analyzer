@@ -4,6 +4,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 
 import '../config/analyzer_config.dart';
 import '../models/issue.dart';
+import '../utils/analyzer_utils.dart';
 import 'base_analyzer.dart';
 
 /// Performans Analyzer
@@ -61,7 +62,7 @@ class _PerformanceVisitor extends RecursiveAstVisitor<void> {
     // Widget sınıfı mı kontrol et
     final extendsClause = node.extendsClause;
     if (extendsClause != null) {
-      final superClass = extendsClause.superclass.name.lexeme;
+      final superClass = extendsClause.superclass.nameString;
       _isInWidgetClass = superClass.contains('Widget') ||
           superClass.contains('State') ||
           superClass == 'StatelessWidget' ||
@@ -87,7 +88,7 @@ class _PerformanceVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    final typeName = node.constructorName.type.name.lexeme;
+    final typeName = node.constructorName.type.nameString;
     final constructorName = node.constructorName.name?.name;
 
     // ListView vs ListView.builder kontrolü

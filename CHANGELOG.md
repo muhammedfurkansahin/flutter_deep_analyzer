@@ -23,3 +23,7 @@
 ## 1.0.1
 
 - Fix analyzer version
+
+## 1.0.2
+
+- Support backward compatibility for analyzer package (<10.0.0 and <=6.4.1) by handling getter access correctly (e.g. `node.name.lexeme` versus tokens/identifiers).

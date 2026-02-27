@@ -4,6 +4,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 
 import '../config/analyzer_config.dart';
 import '../models/issue.dart';
+import '../utils/analyzer_utils.dart';
 import 'base_analyzer.dart';
 
 /// Güvenlik Analyzer
@@ -186,7 +187,7 @@ class _SecurityVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    final typeName = node.constructorName.type.name.lexeme;
+    final typeName = node.constructorName.type.nameString;
 
     // Güvensiz Random kullanımı
     if (typeName == 'Random') {

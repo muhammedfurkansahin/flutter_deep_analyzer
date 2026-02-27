@@ -4,6 +4,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 
 import '../config/analyzer_config.dart';
 import '../models/issue.dart';
+import '../utils/analyzer_utils.dart';
 import 'base_analyzer.dart';
 
 /// Kod Kalitesi Analyzer
@@ -55,7 +56,7 @@ class _CodeQualityVisitor extends RecursiveAstVisitor<void> {
   @override
   void visitClassDeclaration(ClassDeclaration node) {
     // ignore: deprecated_member_use
-    final className = node.name.lexeme;
+    final className = node.nodeName;
     // ignore: deprecated_member_use
     final methods = node.members.whereType<MethodDeclaration>().toList();
 
@@ -82,13 +83,13 @@ class _CodeQualityVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
-    _checkMethodComplexity(node.name.lexeme, node.body, node.name.offset);
+    _checkMethodComplexity(node.nodeName, node.body, node.name.offset);
     super.visitMethodDeclaration(node);
   }
 
   @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
-    _checkMethodComplexity(node.name.lexeme, node.functionExpression.body, node.name.offset);
+    _checkMethodComplexity(node.nodeName, node.functionExpression.body, node.name.offset);
     super.visitFunctionDeclaration(node);
   }
 
