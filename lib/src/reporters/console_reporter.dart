@@ -5,6 +5,9 @@ import 'base_reporter.dart';
 
 /// Renkli konsol çıktısı üreten reporter.
 class ConsoleReporter extends BaseReporter {
+  final String language;
+
+  ConsoleReporter({this.language = 'tr'});
   // ANSI renk kodları
   static const _reset = '\x1B[0m';
   static const _bold = '\x1B[1m';
@@ -45,28 +48,40 @@ class ConsoleReporter extends BaseReporter {
   }
 
   void _writeSummary(StringBuffer buffer, AnalysisResult result, ProjectScore score) {
-    buffer.writeln('$_bold📊 GENEL ÖZET$_reset');
+    buffer.writeln(
+        language == 'en' ? '$_bold📊 GENERAL SUMMARY$_reset' : '$_bold📊 GENEL ÖZET$_reset');
     buffer.writeln('$_dim${'─' * 58}$_reset');
 
     final gradeColor = _getGradeColor(score.grade);
     buffer.writeln(
-      '  Genel Puan:  $gradeColor$_bold${score.overallScore.toStringAsFixed(1)}/100 (${score.grade})$_reset',
+      language == 'en'
+          ? '  Overall Score:  $gradeColor$_bold${score.overallScore.toStringAsFixed(1)}/100 (${score.grade})$_reset'
+          : '  Genel Puan:  $gradeColor$_bold${score.overallScore.toStringAsFixed(1)}/100 (${score.grade})$_reset',
     );
-    buffer.writeln('  Toplam Sorun: $_bold${result.issues.length}$_reset');
+    buffer.writeln(language == 'en'
+        ? '  Total Issues: $_bold${result.issues.length}$_reset'
+        : '  Toplam Sorun: $_bold${result.issues.length}$_reset');
     buffer.writeln(
       '  🔴 Error: $_red${result.errorCount}$_reset  '
       '🟡 Warning: $_yellow${result.warningCount}$_reset  '
       '🔵 Info: $_blue${result.infoCount}$_reset  '
       '⚪ Style: $_dim${result.styleCount}$_reset',
     );
-    buffer.writeln('  Analiz Edilen Dosya: $_bold${result.totalFilesAnalyzed}$_reset');
-    buffer.writeln('  Etkilenen Dosya: $_bold${result.affectedFileCount}$_reset');
-    buffer.writeln('  Süre: $_bold${result.analysisDuration.inMilliseconds}ms$_reset');
+    buffer.writeln(language == 'en'
+        ? '  Analyzed Files: $_bold${result.totalFilesAnalyzed}$_reset'
+        : '  Analiz Edilen Dosya: $_bold${result.totalFilesAnalyzed}$_reset');
+    buffer.writeln(language == 'en'
+        ? '  Affected Files: $_bold${result.affectedFileCount}$_reset'
+        : '  Etkilenen Dosya: $_bold${result.affectedFileCount}$_reset');
+    buffer.writeln(language == 'en'
+        ? '  Duration: $_bold${result.analysisDuration.inMilliseconds}ms$_reset'
+        : '  Süre: $_bold${result.analysisDuration.inMilliseconds}ms$_reset');
     buffer.writeln();
   }
 
   void _writeCategoryScores(StringBuffer buffer, ProjectScore score) {
-    buffer.writeln('$_bold📈 KATEGORİ PUANLARI$_reset');
+    buffer.writeln(
+        language == 'en' ? '$_bold📈 CATEGORY SCORES$_reset' : '$_bold📈 KATEGORİ PUANLARI$_reset');
     buffer.writeln('$_dim${'─' * 58}$_reset');
 
     for (final cat in score.categoryScores) {
@@ -87,12 +102,15 @@ class ConsoleReporter extends BaseReporter {
 
   void _writeIssues(StringBuffer buffer, AnalysisResult result) {
     if (result.issues.isEmpty) {
-      buffer.writeln('$_green$_bold✅ Harika! Hiçbir sorun bulunamadı!$_reset');
+      buffer.writeln(language == 'en'
+          ? '$_green$_bold✅ Awesome! No issues found!$_reset'
+          : '$_green$_bold✅ Harika! Hiçbir sorun bulunamadı!$_reset');
       buffer.writeln();
       return;
     }
 
-    buffer.writeln('$_bold📋 DETAYLI SORUNLAR$_reset');
+    buffer.writeln(
+        language == 'en' ? '$_bold📋 DETAILED ISSUES$_reset' : '$_bold📋 DETAYLI SORUNLAR$_reset');
     buffer.writeln('$_dim${'─' * 58}$_reset');
 
     // Dosyaya göre grupla
@@ -106,7 +124,9 @@ class ConsoleReporter extends BaseReporter {
       final fileIssues = entry.value;
 
       buffer.writeln();
-      buffer.writeln('  $_bold$_white📄 $file$_reset $_dim(${fileIssues.length} sorun)$_reset');
+      buffer.writeln(language == 'en'
+          ? '  $_bold$_white📄 $file$_reset $_dim(${fileIssues.length} issues)$_reset'
+          : '  $_bold$_white📄 $file$_reset $_dim(${fileIssues.length} sorun)$_reset');
 
       // Severity'ye göre sırala
       fileIssues.sort((a, b) => a.severity.index.compareTo(b.severity.index));
@@ -117,8 +137,9 @@ class ConsoleReporter extends BaseReporter {
           '    $severityColor${issue.severityEmoji} [${issue.severityLabel}]$_reset '
           '${issue.message}',
         );
+        final lineStr = language == 'en' ? 'Line' : 'Satır';
         buffer.writeln(
-          '      $_dim📍 Satır ${issue.line} | ${issue.ruleId} | ${issue.categoryLabel}$_reset',
+          '      $_dim📍 $lineStr ${issue.line} | ${issue.ruleId} | ${issue.categoryLabel}$_reset',
         );
 
         if (issue.suggestion != null) {
@@ -136,17 +157,24 @@ class ConsoleReporter extends BaseReporter {
     buffer.writeln('$_dim${'─' * 58}$_reset');
 
     final gradeColor = _getGradeColor(score.grade);
+    final resultStr = language == 'en' ? 'Result' : 'Sonuç';
     buffer.writeln(
-      '$_bold Sonuç: $gradeColor${score.gradeEmoji} '
+      '$_bold $resultStr: $gradeColor${score.gradeEmoji} '
       '${score.overallScore.toStringAsFixed(1)}/100 (${score.grade})$_reset',
     );
 
     if (result.errorCount > 0) {
-      buffer.writeln('$_red ⚠️  ${result.errorCount} kritik hata düzeltilmeli!$_reset');
+      buffer.writeln(language == 'en'
+          ? '$_red ⚠️  ${result.errorCount} critical errors must be fixed!$_reset'
+          : '$_red ⚠️  ${result.errorCount} kritik hata düzeltilmeli!$_reset');
     } else if (result.warningCount > 0) {
-      buffer.writeln('$_yellow 💡 ${result.warningCount} uyarı gözden geçirilmeli.$_reset');
+      buffer.writeln(language == 'en'
+          ? '$_yellow 💡 ${result.warningCount} warnings need review.$_reset'
+          : '$_yellow 💡 ${result.warningCount} uyarı gözden geçirilmeli.$_reset');
     } else {
-      buffer.writeln('$_green ✨ Kod kalitesi çok iyi!$_reset');
+      buffer.writeln(language == 'en'
+          ? '$_green ✨ Code quality is excellent!$_reset'
+          : '$_green ✨ Kod kalitesi çok iyi!$_reset');
     }
 
     buffer.writeln();

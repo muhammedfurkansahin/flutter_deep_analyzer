@@ -6,12 +6,15 @@ import 'base_reporter.dart';
 /// HTML formatında rapor üreten reporter.
 /// Tarayıcıda açılabilir güzel rapor.
 class HtmlReporter extends BaseReporter {
+  final String language;
+
+  HtmlReporter({this.language = 'tr'});
   @override
   String report(AnalysisResult result, ProjectScore score) {
     final buffer = StringBuffer();
 
     buffer.writeln('<!DOCTYPE html>');
-    buffer.writeln('<html lang="tr">');
+    buffer.writeln('<html lang="$language">');
     buffer.writeln('<head>');
     buffer.writeln('<meta charset="UTF-8">');
     buffer.writeln('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
@@ -26,8 +29,12 @@ class HtmlReporter extends BaseReporter {
     buffer.writeln('<div class="container">');
     buffer.writeln('<header>');
     buffer.writeln('<h1>🔍 Flutter Deep Analyzer Report</h1>');
-    buffer.writeln('<p class="timestamp">Analiz: ${result.timestamp.toLocal()}</p>');
-    buffer.writeln('<p class="path">Proje: ${result.projectPath}</p>');
+    buffer.writeln(language == 'en'
+        ? '<p class="timestamp">Analysis: ${result.timestamp.toLocal()}</p>'
+        : '<p class="timestamp">Analiz: ${result.timestamp.toLocal()}</p>');
+    buffer.writeln(language == 'en'
+        ? '<p class="path">Project: ${result.projectPath}</p>'
+        : '<p class="path">Proje: ${result.projectPath}</p>');
     buffer.writeln('</header>');
 
     // Genel Puan
@@ -35,7 +42,9 @@ class HtmlReporter extends BaseReporter {
     buffer.writeln('<div class="overall-score grade-${score.grade.toLowerCase()}">');
     buffer.writeln('<div class="score-value">${score.overallScore.toStringAsFixed(1)}</div>');
     buffer.writeln('<div class="score-grade">${score.grade}</div>');
-    buffer.writeln('<div class="score-label">Genel Puan</div>');
+    buffer.writeln(language == 'en'
+        ? '<div class="score-label">Overall Score</div>'
+        : '<div class="score-label">Genel Puan</div>');
     buffer.writeln('</div>');
 
     // Özet Kartlar
@@ -44,14 +53,17 @@ class HtmlReporter extends BaseReporter {
     _writeSummaryCard(buffer, '🟡 Warning', '${result.warningCount}', 'warning');
     _writeSummaryCard(buffer, '🔵 Info', '${result.infoCount}', 'info');
     _writeSummaryCard(buffer, '⚪ Style', '${result.styleCount}', 'style');
-    _writeSummaryCard(buffer, '📄 Dosya', '${result.totalFilesAnalyzed}', 'neutral');
-    _writeSummaryCard(buffer, '⏱️ Süre', '${result.analysisDuration.inMilliseconds}ms', 'neutral');
+    _writeSummaryCard(buffer, language == 'en' ? '📄 Files' : '📄 Dosya',
+        '${result.totalFilesAnalyzed}', 'neutral');
+    _writeSummaryCard(buffer, language == 'en' ? '⏱️ Duration' : '⏱️ Süre',
+        '${result.analysisDuration.inMilliseconds}ms', 'neutral');
     buffer.writeln('</div>');
     buffer.writeln('</section>');
 
     // Kategori Puanları
     buffer.writeln('<section class="categories-section">');
-    buffer.writeln('<h2>📈 Kategori Puanları</h2>');
+    buffer.writeln(
+        language == 'en' ? '<h2>📈 Category Scores</h2>' : '<h2>📈 Kategori Puanları</h2>');
     buffer.writeln('<div class="category-grid">');
     for (final cat in score.categoryScores) {
       _writeCategoryCard(buffer, cat);
@@ -62,7 +74,9 @@ class HtmlReporter extends BaseReporter {
     // Detaylı Sorunlar
     if (result.issues.isNotEmpty) {
       buffer.writeln('<section class="issues-section">');
-      buffer.writeln('<h2>📋 Detaylı Sorunlar (${result.issues.length})</h2>');
+      buffer.writeln(language == 'en'
+          ? '<h2>📋 Detailed Issues (${result.issues.length})</h2>'
+          : '<h2>📋 Detaylı Sorunlar (${result.issues.length})</h2>');
 
       // Dosyaya göre grupla
       final issuesByFile = <String, List<Issue>>{};
@@ -74,9 +88,9 @@ class HtmlReporter extends BaseReporter {
         buffer.writeln('<div class="file-group">');
         buffer.writeln('<h3>📄 ${entry.key} <span class="badge">${entry.value.length}</span></h3>');
         buffer.writeln('<table class="issues-table">');
-        buffer.writeln(
-          '<thead><tr><th>Severity</th><th>Kural</th><th>Satır</th><th>Mesaj</th><th>Öneri</th></tr></thead>',
-        );
+        buffer.writeln(language == 'en'
+            ? '<thead><tr><th>Severity</th><th>Rule</th><th>Line</th><th>Message</th><th>Suggestion</th></tr></thead>'
+            : '<thead><tr><th>Severity</th><th>Kural</th><th>Satır</th><th>Mesaj</th><th>Öneri</th></tr></thead>');
         buffer.writeln('<tbody>');
 
         entry.value.sort((a, b) => a.severity.index.compareTo(b.severity.index));
@@ -100,7 +114,9 @@ class HtmlReporter extends BaseReporter {
       buffer.writeln('</section>');
     } else {
       buffer.writeln('<section class="no-issues">');
-      buffer.writeln('<h2>✅ Harika! Hiçbir sorun bulunamadı!</h2>');
+      buffer.writeln(language == 'en'
+          ? '<h2>✅ Awesome! No issues found!</h2>'
+          : '<h2>✅ Harika! Hiçbir sorun bulunamadı!</h2>');
       buffer.writeln('</section>');
     }
 

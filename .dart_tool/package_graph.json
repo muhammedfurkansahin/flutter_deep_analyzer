@@ -5,7 +5,7 @@
   "packages": [
     {
       "name": "flutter_deep_analyzer",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "dependencies": [
         "analyzer",
         "args",

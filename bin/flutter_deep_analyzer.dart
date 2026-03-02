@@ -7,9 +7,9 @@ import 'package:flutter_deep_analyzer/flutter_deep_analyzer.dart';
 /// Flutter Deep Analyzer CLI giriş noktası.
 ///
 /// Kullanım:
-///   dart run flutter_deep_analyzer analyze `path`
 ///   dart run flutter_deep_analyzer analyze --format=json `path`
 ///   dart run flutter_deep_analyzer analyze --format=html --output=report.html `path`
+///   dart run flutter_deep_analyzer analyze --format=markdown --output=report.md `path`
 ///   dart run flutter_deep_analyzer analyze --category=security `path`
 void main(List<String> arguments) async {
   final parser = ArgParser();
@@ -20,7 +20,7 @@ void main(List<String> arguments) async {
       'format',
       abbr: 'f',
       help: 'Çıktı formatı',
-      allowed: ['console', 'json', 'html'],
+      allowed: ['console', 'json', 'html', 'markdown'],
       defaultsTo: 'console',
     )
     ..addOption('output', abbr: 'o', help: 'Rapor çıktı dosyası yolu')
@@ -78,22 +78,73 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
     exit(0);
   }
 
-  if (results.rest.isEmpty) {
-    stderr.writeln('❌ Hata: Analiz edilecek dizin yolu belirtilmeli.');
-    stderr.writeln('Kullanım: flutter_deep_analyzer analyze <path>');
-    exit(1);
-  }
+  String format = results['format'] as String;
+  String? outputPath = results['output'] as String?;
+  String? categoryFilter = results['category'] as String?;
+  String? configPath = results['config'] as String?;
+  String language =
+      'tr'; // Default language fallback for interactive prompt, can be implemented further
 
-  final targetPath = results.rest.first;
-  final format = results['format'] as String;
-  final outputPath = results['output'] as String?;
-  final categoryFilter = results['category'] as String?;
-  final configPath = results['config'] as String?;
+  try {
+    if (results.options.contains('language')) {
+      language = results['language'] as String? ?? 'tr';
+    }
+  } catch (_) {}
+
+  String targetPath;
+
+  // İnteraktif mod tetikleyici: Argüman yollanmamışsa
+  if (results.rest.isEmpty && !results.wasParsed('format') && !results.wasParsed('category')) {
+    stdout.write('🌍 Lütfen dil seçin / Please select language (tr/en) [tr]: ');
+    final langInput = stdin.readLineSync()?.trim().toLowerCase();
+    if (langInput == 'en') language = 'en';
+
+    final promptTextCat = language == 'en'
+        ? '📂 Category Selection: Select category (all, architecture, code_quality, best_practice, security, race_condition, performance, memory_leak) [all]: '
+        : '📂 Kategori Seçimi: Kategori seçin (all, architecture, code_quality, best_practice, security, race_condition, performance, memory_leak) [all]: ';
+    stdout.write(promptTextCat);
+    final catInput = stdin.readLineSync()?.trim();
+    if (catInput != null && catInput.isNotEmpty && catInput != 'all') {
+      categoryFilter = catInput;
+    }
+
+    final promptTextFormat = language == 'en'
+        ? '📄 Report Format: Select report format (console, json, html, markdown) [console]: '
+        : '📄 Rapor Formatı: Rapor formatı seçin (console, json, html, markdown) [console]: ';
+    stdout.write(promptTextFormat);
+    final formatInput = stdin.readLineSync()?.trim();
+    if (formatInput != null && formatInput.isNotEmpty) {
+      format = formatInput;
+    }
+
+    final promptTargetPath = language == 'en'
+        ? '📁 Project Directory: Enter project path (Leave empty for current directory): '
+        : '📁 Proje Dizini: Proje dizinini girin (Mevcut dizin için boş bırakın): ';
+    stdout.write(promptTargetPath);
+    final pathInput = stdin.readLineSync()?.trim();
+    if (pathInput != null && pathInput.isNotEmpty && pathInput != '.') {
+      targetPath = pathInput;
+    } else {
+      targetPath = Directory.current.path;
+    }
+  } else {
+    // Normal komut satırı çalışması
+    if (results.rest.isEmpty) {
+      targetPath = Directory.current.path;
+    } else {
+      targetPath = results.rest.first;
+      if (targetPath == '.') {
+        targetPath = Directory.current.path;
+      }
+    }
+  }
 
   // Hedef dizin kontrolü
   final targetDir = Directory(targetPath);
   if (!targetDir.existsSync()) {
-    stderr.writeln('❌ Hata: Dizin bulunamadı: $targetPath');
+    stderr.writeln(language == 'en'
+        ? '❌ Error: Directory not found: $targetPath'
+        : '❌ Hata: Dizin bulunamadı: $targetPath');
     exit(1);
   }
 
@@ -106,8 +157,10 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
   final runner = AnalyzerRunner(config: config);
 
   // Analiz başlat
-  stderr.writeln('🔍 Flutter Deep Analyzer v0.1.0');
-  stderr.writeln('📂 Analiz ediliyor: ${p.absolute(targetPath)}');
+  stderr.writeln('🔍 Flutter Deep Analyzer');
+  stderr.writeln(language == 'en'
+      ? '📂 Analyzing: ${p.absolute(targetPath)}'
+      : '📂 Analiz ediliyor: ${p.absolute(targetPath)}');
   stderr.writeln();
 
   final result = categoryFilter != null
@@ -119,16 +172,38 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
   final score = scorer.score(result);
 
   // Raporla
-  final reporter = _createReporter(format);
+  final reporter = _createReporter(format, language);
   final report = reporter.report(result, score);
 
   // Çıktı
   if (outputPath != null) {
+    if (format == 'html' && !outputPath.endsWith('.html')) outputPath += '.html';
+    if (format == 'json' && !outputPath.endsWith('.json')) outputPath += '.json';
+    if (format == 'markdown' && !outputPath.endsWith('.md')) outputPath += '.md';
+
     final outputFile = File(outputPath);
     await outputFile.writeAsString(report);
-    stderr.writeln('📄 Rapor kaydedildi: $outputPath');
+    stderr.writeln(
+        language == 'en' ? '📄 Report saved: $outputPath' : '📄 Rapor kaydedildi: $outputPath');
   } else {
     print(report);
+  }
+
+  // Konsola kısa bir özet geç (eğer çıktı formatı console değilse de kullanıcının haberi olsun)
+  if (format != 'console') {
+    stderr.writeln();
+    stderr.writeln('----------------------------------------------------------');
+    final resultStr = language == 'en' ? 'Result' : 'Sonuç';
+    stderr.writeln(
+      '${score.gradeEmoji} $resultStr: ${score.overallScore.toStringAsFixed(1)}/100 (${score.grade})',
+    );
+    if (language == 'en') {
+      stderr.writeln(
+          '🔴 Errors: ${result.errorCount} | 🟡 Warnings: ${result.warningCount} | 🔵 Info: ${result.infoCount}');
+    } else {
+      stderr.writeln(
+          '🔴 Hatalar: ${result.errorCount} | 🟡 Uyarılar: ${result.warningCount} | 🔵 Bilgi: ${result.infoCount}');
+    }
   }
 
   // Hata varsa exit code 1
@@ -137,15 +212,17 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
   }
 }
 
-BaseReporter _createReporter(String format) {
+BaseReporter _createReporter(String format, String language) {
   switch (format) {
     case 'json':
       return JsonReporter();
     case 'html':
-      return HtmlReporter();
+      return HtmlReporter(language: language);
+    case 'markdown':
+      return MarkdownReporter(language: language);
     case 'console':
     default:
-      return ConsoleReporter();
+      return ConsoleReporter(language: language);
   }
 }
 
@@ -188,6 +265,7 @@ ${analyzeParser.usage}
   flutter_deep_analyzer analyze .
   flutter_deep_analyzer analyze --format=json --output=report.json .
   flutter_deep_analyzer analyze --format=html --output=report.html .
+  flutter_deep_analyzer analyze --format=markdown --output=report.md .
   flutter_deep_analyzer analyze --category=security .
   flutter_deep_analyzer analyze --config=custom_config.yaml .
 

@@ -29,7 +29,10 @@ dev_dependencies:
 ### Basic Analysis
 
 ```bash
-# Full analysis
+# Run interactive mode (asks for language, category, format, path)
+dart run flutter_deep_analyzer analyze
+
+# Full analysis on current directory
 dart run flutter_deep_analyzer analyze .
 
 # Security-only analysis
@@ -40,6 +43,9 @@ dart run flutter_deep_analyzer analyze --format=json --output=report.json .
 
 # HTML report output
 dart run flutter_deep_analyzer analyze --format=html --output=report.html .
+
+# Markdown report output
+dart run flutter_deep_analyzer analyze --format=markdown --output=report.md .
 ```
 
 ### Configuration
@@ -87,6 +93,7 @@ Each category and the overall project are scored from 0 to 100:
 - **Console** — Colorful terminal output with emojis and progress bars
 - **JSON** — Machine-readable for CI/CD integration
 - **HTML** — Modern dark theme report viewable in browser
+- **Markdown** — Visually rich format perfect for GitHub, GitLab, and IDEs
 
 ## Publishing to pub.dev
 
@@ -127,7 +134,10 @@ dev_dependencies:
 ## Kullanım
 
 ```bash
-# Tüm kategorilerde analiz
+# İnteraktif mod (Dil, Kategori, Format ve Dizin seçimi sorar)
+dart run flutter_deep_analyzer analyze
+
+# Tüm kategorilerde mevcut dizinde analiz
 dart run flutter_deep_analyzer analyze .
 
 # Sadece güvenlik analizi
@@ -138,6 +148,9 @@ dart run flutter_deep_analyzer analyze --format=json --output=report.json .
 
 # HTML rapor çıktısı
 dart run flutter_deep_analyzer analyze --format=html --output=report.html .
+
+# Markdown rapor çıktısı
+dart run flutter_deep_analyzer analyze --format=markdown --output=report.md .
 ```
 
 ## Konfigürasyon
@@ -185,6 +198,7 @@ Her kategori ve genel proje 0-100 arası puanlanır:
 - **Console** — Renkli, emoji destekli terminal çıktısı
 - **JSON** — CI/CD entegrasyonu için makine tarafından okunabilir
 - **HTML** — Tarayıcıda açılabilir modern dark theme rapor
+- **Markdown** — GitHub, GitLab ve IDE'lerde görüntülemek için çok uygun görsel format
 
 ---
 
