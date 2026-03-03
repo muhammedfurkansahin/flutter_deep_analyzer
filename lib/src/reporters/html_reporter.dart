@@ -49,10 +49,10 @@ class HtmlReporter extends BaseReporter {
 
     // Özet Kartlar
     buffer.writeln('<div class="summary-cards">');
-    _writeSummaryCard(buffer, '🔴 Error', '${result.errorCount}', 'error');
-    _writeSummaryCard(buffer, '🟡 Warning', '${result.warningCount}', 'warning');
-    _writeSummaryCard(buffer, '🔵 Info', '${result.infoCount}', 'info');
-    _writeSummaryCard(buffer, '⚪ Style', '${result.styleCount}', 'style');
+    _writeSummaryCard(buffer, '🔴 Error', '${result.errorCount}', 'error', filterable: true);
+    _writeSummaryCard(buffer, '🟡 Warning', '${result.warningCount}', 'warning', filterable: true);
+    _writeSummaryCard(buffer, '🔵 Info', '${result.infoCount}', 'info', filterable: true);
+    _writeSummaryCard(buffer, '⚪ Style', '${result.styleCount}', 'style', filterable: true);
     _writeSummaryCard(buffer, language == 'en' ? '📄 Files' : '📄 Dosya',
         '${result.totalFilesAnalyzed}', 'neutral');
     _writeSummaryCard(buffer, language == 'en' ? '⏱️ Duration' : '⏱️ Süre',
@@ -95,7 +95,8 @@ class HtmlReporter extends BaseReporter {
 
         entry.value.sort((a, b) => a.severity.index.compareTo(b.severity.index));
         for (final issue in entry.value) {
-          buffer.writeln('<tr class="severity-${issue.severity.name}">');
+          buffer.writeln(
+              '<tr class="severity-${issue.severity.name}" data-severity="${issue.severity.name}">');
           buffer.writeln(
             '<td><span class="severity-badge ${issue.severity.name}">${issue.severityLabel}</span></td>',
           );
@@ -120,6 +121,11 @@ class HtmlReporter extends BaseReporter {
       buffer.writeln('</section>');
     }
 
+    // Filtreleme JavaScript
+    buffer.writeln('<script>');
+    buffer.writeln(_getScript());
+    buffer.writeln('</script>');
+
     buffer.writeln('<footer>Powered by Flutter Deep Analyzer v0.1.0</footer>');
     buffer.writeln('</div>');
     buffer.writeln('</body>');
@@ -128,8 +134,11 @@ class HtmlReporter extends BaseReporter {
     return buffer.toString();
   }
 
-  void _writeSummaryCard(StringBuffer buffer, String label, String value, String type) {
-    buffer.writeln('<div class="summary-card $type">');
+  void _writeSummaryCard(StringBuffer buffer, String label, String value, String type,
+      {bool filterable = false}) {
+    final filterAttr = filterable ? ' data-filter="$type" onclick="toggleFilter(\'$type\')"' : '';
+    final cursorStyle = filterable ? ' style="cursor:pointer"' : '';
+    buffer.writeln('<div class="summary-card $type"$filterAttr$cursorStyle>');
     buffer.writeln('<div class="card-value">$value</div>');
     buffer.writeln('<div class="card-label">$label</div>');
     buffer.writeln('</div>');
@@ -191,9 +200,17 @@ header h1 { font-size: 2rem; background: linear-gradient(135deg, #38bdf8, #818cf
 .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; width: 100%; }
 .summary-card {
   background: #1e293b; border-radius: 12px; padding: 1rem; text-align: center;
-  border: 1px solid #334155; transition: transform 0.2s;
+  border: 1px solid #334155; transition: transform 0.2s, box-shadow 0.2s;
 }
 .summary-card:hover { transform: translateY(-2px); }
+.summary-card[data-filter] { cursor: pointer; }
+.summary-card.active-filter { box-shadow: 0 0 0 2px #38bdf8; border-color: #38bdf8; transform: translateY(-3px); }
+.summary-card.active-filter.error { box-shadow: 0 0 0 2px #ef4444; border-color: #ef4444; }
+.summary-card.active-filter.warning { box-shadow: 0 0 0 2px #eab308; border-color: #eab308; }
+.summary-card.active-filter.info { box-shadow: 0 0 0 2px #3b82f6; border-color: #3b82f6; }
+.summary-card.active-filter.style { box-shadow: 0 0 0 2px #94a3b8; border-color: #94a3b8; }
+.issue-row-hidden { display: none !important; }
+.file-group-hidden { display: none !important; }
 .card-value { font-size: 1.8rem; font-weight: bold; }
 .card-label { font-size: 0.85rem; color: #94a3b8; }
 .summary-card.error .card-value { color: #ef4444; }
@@ -256,6 +273,57 @@ footer { text-align: center; color: #475569; font-size: 0.8rem; margin-top: 3rem
   .container { padding: 1rem; }
   .summary-cards { grid-template-columns: repeat(3, 1fr); }
   .category-grid { grid-template-columns: 1fr; }
+}
+''';
+  }
+
+  String _getScript() {
+    return '''
+let activeFilter = null;
+
+function toggleFilter(severity) {
+  const cards = document.querySelectorAll('.summary-card[data-filter]');
+  const rows = document.querySelectorAll('tr[data-severity]');
+  const fileGroups = document.querySelectorAll('.file-group');
+
+  // Aynı karta tekrar tıklanırsa filtreyi kaldır
+  if (activeFilter === severity) {
+    activeFilter = null;
+    cards.forEach(c => c.classList.remove('active-filter'));
+    rows.forEach(r => r.classList.remove('issue-row-hidden'));
+    fileGroups.forEach(fg => fg.classList.remove('file-group-hidden'));
+    return;
+  }
+
+  activeFilter = severity;
+
+  // Kartların aktif durumunu güncelle
+  cards.forEach(c => {
+    if (c.getAttribute('data-filter') === severity) {
+      c.classList.add('active-filter');
+    } else {
+      c.classList.remove('active-filter');
+    }
+  });
+
+  // Satırları filtrele
+  rows.forEach(r => {
+    if (r.getAttribute('data-severity') === severity) {
+      r.classList.remove('issue-row-hidden');
+    } else {
+      r.classList.add('issue-row-hidden');
+    }
+  });
+
+  // Görünür satır kalmayan dosya gruplarını gizle
+  fileGroups.forEach(fg => {
+    const visibleRows = fg.querySelectorAll('tr[data-severity]:not(.issue-row-hidden)');
+    if (visibleRows.length === 0) {
+      fg.classList.add('file-group-hidden');
+    } else {
+      fg.classList.remove('file-group-hidden');
+    }
+  });
 }
 ''';
   }

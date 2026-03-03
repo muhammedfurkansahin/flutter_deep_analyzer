@@ -185,6 +185,24 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
     await outputFile.writeAsString(report);
     stderr.writeln(
         language == 'en' ? '📄 Report saved: $outputPath' : '📄 Rapor kaydedildi: $outputPath');
+  } else if (format != 'console') {
+    // Console dışı formatlarda otomatik dosya kaydı
+    final now = DateTime.now();
+    final timestamp =
+        '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}';
+    final ext = format == 'markdown' ? 'md' : format;
+    final reportDirPath = p.join(targetPath, 'flutter_deep_analyzer');
+    final reportDir = Directory(reportDirPath);
+    if (!reportDir.existsSync()) {
+      reportDir.createSync(recursive: true);
+    }
+    final reportFileName = 'report_$timestamp.$ext';
+    final reportFilePath = p.join(reportDirPath, reportFileName);
+    final reportFile = File(reportFilePath);
+    await reportFile.writeAsString(report);
+    stderr.writeln(language == 'en'
+        ? '📄 Report saved: $reportFilePath'
+        : '📄 Rapor kaydedildi: $reportFilePath');
   } else {
     print(report);
   }

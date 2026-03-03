@@ -31,3 +31,5 @@
 - CLI now features an interactive mode (asks for language, category, format, and path) when run without arguments, with bilingual prompts (English/Turkish).
 - Added new Markdown report format (`--format=markdown`) alongside Console, JSON, and HTML.
 - Always prints an overall score summary to terminal stderr even when generating JSON/HTML/Markdown.
+## 1.0.4
+- HTML report now includes interactive severity filters (Error, Warning, Info, Style) with visual feedback and smooth animations.
