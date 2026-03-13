@@ -36,7 +36,7 @@
 ## 1.0.4
 - HTML report now includes interactive severity filters (Error, Warning, Info, Style) with visual feedback and smooth animations.
 
-## 1.1.0
+## 1.0.5
 
 - **Baseline Support**: Added `--create-baseline` to save current technical debt and `--use-baseline=baseline.json` to ignore previously reported issues.
 - **SonarQube Integration**: Added `--format=sonarqube` format for seamless CI/CD import to SonarQube servers.
