@@ -20,7 +20,7 @@ void main(List<String> arguments) async {
       'format',
       abbr: 'f',
       help: 'Çıktı formatı',
-      allowed: ['console', 'json', 'html', 'markdown'],
+      allowed: ['console', 'json', 'html', 'markdown', 'sonarqube'],
       defaultsTo: 'console',
     )
     ..addOption('output', abbr: 'o', help: 'Rapor çıktı dosyası yolu')
@@ -36,9 +36,14 @@ void main(List<String> arguments) async {
         'race_condition',
         'performance',
         'memory_leak',
+        'type_safety',
       ],
     )
     ..addOption('config', help: 'Konfigürasyon dosyası yolu')
+    ..addFlag('create-baseline',
+        help: 'Mevcut hataları baseline.json dosyasına kaydeder ve yoksayar', negatable: false)
+    ..addOption('use-baseline',
+        help: 'Belirtilen baseline dosyasındaki hataları analizden hariç tutar')
     ..addFlag('help', abbr: 'h', negatable: false, help: 'Yardım mesajını göster');
 
   parser.addCommand('analyze', analyzeParser);
@@ -92,6 +97,8 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
   } catch (_) {}
 
   String targetPath;
+  bool createBaseline = results['create-baseline'] == true;
+  String? useBaselinePath = results['use-baseline'] as String?;
 
   // İnteraktif mod tetikleyici: Argüman yollanmamışsa
   if (results.rest.isEmpty && !results.wasParsed('format') && !results.wasParsed('category')) {
@@ -100,8 +107,8 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
     if (langInput == 'en') language = 'en';
 
     final promptTextCat = language == 'en'
-        ? '📂 Category Selection: Select category (all, architecture, code_quality, best_practice, security, race_condition, performance, memory_leak) [all]: '
-        : '📂 Kategori Seçimi: Kategori seçin (all, architecture, code_quality, best_practice, security, race_condition, performance, memory_leak) [all]: ';
+        ? '📂 Category Selection: Select category (all, architecture, code_quality, best_practice, security, race_condition, performance, memory_leak, type_safety) [all]: '
+        : '📂 Kategori Seçimi: Kategori seçin (all, architecture, code_quality, best_practice, security, race_condition, performance, memory_leak, type_safety) [all]: ';
     stdout.write(promptTextCat);
     final catInput = stdin.readLineSync()?.trim();
     if (catInput != null && catInput.isNotEmpty && catInput != 'all') {
@@ -109,8 +116,8 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
     }
 
     final promptTextFormat = language == 'en'
-        ? '📄 Report Format: Select report format (console, json, html, markdown) [console]: '
-        : '📄 Rapor Formatı: Rapor formatı seçin (console, json, html, markdown) [console]: ';
+        ? '📄 Report Format: Select report format (console, json, html, markdown, sonarqube) [console]: '
+        : '📄 Rapor Formatı: Rapor formatı seçin (console, json, html, markdown, sonarqube) [console]: ';
     stdout.write(promptTextFormat);
     final formatInput = stdin.readLineSync()?.trim();
     if (formatInput != null && formatInput.isNotEmpty) {
@@ -126,6 +133,17 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
       targetPath = pathInput;
     } else {
       targetPath = Directory.current.path;
+    }
+
+    final promptBaseline = language == 'en'
+        ? '🛠️  Baseline Options:\n  1) Analyze normally (default)\n  2) Create new baseline (ignore future identical issues)\n  3) Use existing baseline (filter out known issues)\nSelect (1/2/3) [1]: '
+        : '🛠️  Baseline Seçenekleri:\n  1) Normal analiz et (varsayılan)\n  2) Yeni baseline oluştur (mevcut hataları gelecekte yoksay)\n  3) Mevcut baseline kullan (bilinen hataları gizle)\nSeçiminiz (1/2/3) [1]: ';
+    stdout.write(promptBaseline);
+    final baselineInput = stdin.readLineSync()?.trim();
+    if (baselineInput == '2') {
+      createBaseline = true;
+    } else if (baselineInput == '3') {
+      useBaselinePath = p.join(targetPath, 'baseline.json');
     }
   } else {
     // Normal komut satırı çalışması
@@ -167,13 +185,39 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
       ? await runner.analyzeCategory(targetPath, _parseCategory(categoryFilter))
       : await runner.analyzeDirectory(targetPath);
 
+  // Baseline İşlemleri
+  AnalysisResult finalResult = result;
+
+  if (useBaselinePath != null) {
+    final baselineManager = BaselineManager();
+    await baselineManager.loadBaseline(useBaselinePath);
+    final filteredIssues = baselineManager.filterIssues(result.issues);
+
+    finalResult = AnalysisResult(
+      issues: filteredIssues,
+      timestamp: result.timestamp,
+      projectPath: result.projectPath,
+      analysisDuration: result.analysisDuration,
+      totalFilesAnalyzed: result.totalFilesAnalyzed,
+    );
+  }
+
+  if (createBaseline) {
+    final baselinePath = p.join(targetPath, 'baseline.json');
+    await BaselineManager.createBaseline(finalResult.issues, baselinePath);
+    stderr.writeln(language == 'en'
+        ? '✅ Baseline created: \$baselinePath'
+        : '✅ Baseline oluşturuldu: \$baselinePath');
+    exit(0);
+  }
+
   // Puanla
   final scorer = ProjectScorer();
-  final score = scorer.score(result);
+  final score = scorer.score(finalResult);
 
   // Raporla
   final reporter = _createReporter(format, language);
-  final report = reporter.report(result, score);
+  final report = reporter.report(finalResult, score);
 
   // Çıktı
   if (outputPath != null) {
@@ -217,15 +261,15 @@ Future<void> _runAnalysis(ArgResults results, ArgParser parser) async {
     );
     if (language == 'en') {
       stderr.writeln(
-          '🔴 Errors: ${result.errorCount} | 🟡 Warnings: ${result.warningCount} | 🔵 Info: ${result.infoCount}');
+          '🔴 Errors: ${finalResult.errorCount} | 🟡 Warnings: ${finalResult.warningCount} | 🔵 Info: ${finalResult.infoCount}');
     } else {
       stderr.writeln(
-          '🔴 Hatalar: ${result.errorCount} | 🟡 Uyarılar: ${result.warningCount} | 🔵 Bilgi: ${result.infoCount}');
+          '🔴 Hatalar: ${finalResult.errorCount} | 🟡 Uyarılar: ${finalResult.warningCount} | 🔵 Bilgi: ${finalResult.infoCount}');
     }
   }
 
   // Hata varsa exit code 1
-  if (result.errorCount > 0) {
+  if (finalResult.errorCount > 0) {
     exit(1);
   }
 }
@@ -234,6 +278,8 @@ BaseReporter _createReporter(String format, String language) {
   switch (format) {
     case 'json':
       return JsonReporter();
+    case 'sonarqube':
+      return SonarQubeReporter();
     case 'html':
       return HtmlReporter(language: language);
     case 'markdown':
@@ -260,6 +306,8 @@ IssueCategory _parseCategory(String name) {
       return IssueCategory.performance;
     case 'memory_leak':
       return IssueCategory.memoryLeak;
+    case 'type_safety':
+      return IssueCategory.typeSafety;
     default:
       throw ArgumentError('Bilinmeyen kategori: $name');
   }

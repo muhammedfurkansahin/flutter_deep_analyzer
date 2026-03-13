@@ -59,19 +59,21 @@ class CategoryScore {
         return 'Performans';
       case IssueCategory.memoryLeak:
         return 'Bellek Sızıntısı';
+      case IssueCategory.typeSafety:
+        return 'Tip Güvenliği';
     }
   }
 
   Map<String, dynamic> toJson() => {
-    'category': category.name,
-    'score': score,
-    'grade': grade,
-    'issueCount': issueCount,
-    'errors': errorCount,
-    'warnings': warningCount,
-    'infos': infoCount,
-    'styles': styleCount,
-  };
+        'category': category.name,
+        'score': score,
+        'grade': grade,
+        'issueCount': issueCount,
+        'errors': errorCount,
+        'warnings': warningCount,
+        'infos': infoCount,
+        'styles': styleCount,
+      };
 }
 
 /// Projenin genel puanı.
@@ -105,8 +107,8 @@ class ProjectScore {
   }
 
   Map<String, dynamic> toJson() => {
-    'overallScore': overallScore,
-    'grade': grade,
-    'categories': categoryScores.map((c) => c.toJson()).toList(),
-  };
+        'overallScore': overallScore,
+        'grade': grade,
+        'categories': categoryScores.map((c) => c.toJson()).toList(),
+      };
 }

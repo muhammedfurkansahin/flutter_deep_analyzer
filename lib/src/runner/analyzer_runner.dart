@@ -13,6 +13,9 @@ import '../analyzers/security_analyzer.dart';
 import '../analyzers/race_condition_analyzer.dart';
 import '../analyzers/performance_analyzer.dart';
 import '../analyzers/memory_leak_analyzer.dart';
+import '../analyzers/type_safety_analyzer.dart';
+import '../analyzers/state_management_analyzer.dart';
+import '../analyzers/accessibility_analyzer.dart';
 import '../config/analyzer_config.dart';
 import '../models/issue.dart';
 import '../models/analysis_result.dart';
@@ -48,6 +51,12 @@ class AnalyzerRunner {
     if (config.isCategoryEnabled('memory_leak')) {
       _analyzers.add(MemoryLeakAnalyzer(config: config));
     }
+    if (config.isCategoryEnabled('state_management')) {
+      _analyzers.add(StateManagementAnalyzer(config: config));
+    }
+    if (config.isCategoryEnabled('accessibility')) {
+      _analyzers.add(AccessibilityAnalyzer(config: config));
+    }
   }
 
   /// Belirli bir dizini analiz et.
@@ -58,10 +67,18 @@ class AnalyzerRunner {
     // Dart dosyalarını bul
     final dartFiles = _findDartFiles(absolutePath);
 
+    final allIssues = <Issue>[];
+
+    // Proje çapında analizleri çalıştır (şimdi sadece tip güvenliği)
+    if (config.isCategoryEnabled('type_safety')) {
+      final typeSafetyAnalyzer = TypeSafetyAnalyzer(config: config);
+      allIssues.addAll(typeSafetyAnalyzer.analyzeProject(absolutePath));
+    }
+
     if (dartFiles.isEmpty) {
       stopwatch.stop();
       return AnalysisResult(
-        issues: [],
+        issues: allIssues,
         timestamp: DateTime.now(),
         projectPath: absolutePath,
         analysisDuration: stopwatch.elapsed,
@@ -75,7 +92,6 @@ class AnalyzerRunner {
       resourceProvider: PhysicalResourceProvider.INSTANCE,
     );
 
-    final allIssues = <Issue>[];
     var filesAnalyzed = 0;
 
     for (final filePath in dartFiles) {

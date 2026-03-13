@@ -28,6 +28,9 @@ class AnalyzerConfig {
         'race_condition': CategoryConfig.defaults(),
         'performance': CategoryConfig.defaults(),
         'memory_leak': CategoryConfig.defaults(),
+        'type_safety': CategoryConfig.defaults(),
+        'state_management': CategoryConfig.defaults(),
+        'accessibility': CategoryConfig.defaults(),
       },
       excludePatterns: ['**/*.g.dart', '**/*.freezed.dart', '**/generated/**', '**/.dart_tool/**'],
     );

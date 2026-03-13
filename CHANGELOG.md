@@ -1,5 +1,7 @@
 # Changelog
 
+
+
 ## 0.1.0
 
 - Initial release
@@ -33,3 +35,12 @@
 - Always prints an overall score summary to terminal stderr even when generating JSON/HTML/Markdown.
 ## 1.0.4
 - HTML report now includes interactive severity filters (Error, Warning, Info, Style) with visual feedback and smooth animations.
+
+## 1.1.0
+
+- **Baseline Support**: Added `--create-baseline` to save current technical debt and `--use-baseline=baseline.json` to ignore previously reported issues.
+- **SonarQube Integration**: Added `--format=sonarqube` format for seamless CI/CD import to SonarQube servers.
+- **Interactive CLI Expansion**: Included new feature parameters to the interactive cli setup sequence.
+- **Type Safety Analyzer**: Validates `strict-casts`, `strict-inference` directly checking the `analysis_options.yaml` tree.
+- **State Management Anti-patterns**: Detects unideal patterns in Bloc, Riverpod & GetX.
+- **Accessibility & Security Rules**: Detects `semanticLabel` usage, checks `!mounted` returns for async blocks in BuildContext boundaries.

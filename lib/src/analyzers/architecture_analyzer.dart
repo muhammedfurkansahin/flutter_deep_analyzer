@@ -68,7 +68,7 @@ class ArchitectureAnalyzer extends BaseAnalyzer {
       }
     }
 
-    // Katman ihlali kontrolü: presentation katmanından data katmanına direkt erişim
+    // 1. Presentation -> Data ihlali
     if (filePath.contains('/presentation/') ||
         filePath.contains('/ui/') ||
         filePath.contains('/pages/') ||
@@ -88,13 +88,79 @@ class ArchitectureAnalyzer extends BaseAnalyzer {
               severity: Severity.error,
               category: IssueCategory.architecture,
               message:
-                  'Katman ihlali: Presentation katmanı doğrudan data katmanına erişiyor. Import: $importUri',
+                  'Katman ihlali: Presentation katmanı doğrudan data katmanına erişiyor. Import: \$importUri',
               filePath: filePath,
               line: directive.offset,
               suggestion:
                   'Presentation katmanından data katmanına erişmek yerine domain/usecase katmanını kullanın.',
             ),
           );
+        }
+      }
+    }
+
+    // 2. Domain Saflığı (Layer Purity) ihlali
+    if (filePath.contains('/domain/') ||
+        filePath.contains('/entities/') ||
+        filePath.contains('/usecases/')) {
+      for (final importUri in imports) {
+        if (importUri.contains('package:flutter/') ||
+            importUri.contains('package:flutter_bloc/') ||
+            importUri.contains('/data/') ||
+            importUri.contains('/presentation/') ||
+            importUri.contains('/ui/')) {
+          final directive = unit.directives.firstWhere(
+            (d) => d is ImportDirective && d.uri.stringValue == importUri,
+            orElse: () => unit.directives.first,
+          );
+          issues.add(
+            Issue(
+              ruleId: 'arch-domain-purity',
+              severity: Severity.error,
+              category: IssueCategory.architecture,
+              message:
+                  'Domain saflığı ihlali: Domain katmanı bağımsız olmalıdır. Harici kütüphane veya alt/üst katman importu yasaktır. Import: \$importUri',
+              filePath: filePath,
+              line: directive.offset,
+              suggestion:
+                  'Domain katmanını framework (Flutter) ve veri katmanından (Data) izole edin.',
+            ),
+          );
+        }
+      }
+    }
+
+    // 3. Feature Isolation (Özellik İzolasyonu) ihlali
+    final featureRegex = RegExp(r'/features/([^/]+)/');
+    final featureMatch = featureRegex.firstMatch(filePath);
+    if (featureMatch != null) {
+      final currentFeature = featureMatch.group(1);
+      for (final importUri in imports) {
+        // Eğer import uri'si başka bir feature içeriyorsa ve o feature'ın src veya internal dosyasını import ediyorsa
+        final importedFeatureMatch = featureRegex.firstMatch(importUri);
+        if (importedFeatureMatch != null) {
+          final importedFeature = importedFeatureMatch.group(1);
+          if (currentFeature != importedFeature) {
+            if (importUri.contains('/src/') || importUri.contains('/_')) {
+              final directive = unit.directives.firstWhere(
+                (d) => d is ImportDirective && d.uri.stringValue == importUri,
+                orElse: () => unit.directives.first,
+              );
+              issues.add(
+                Issue(
+                  ruleId: 'arch-feature-isolation',
+                  severity: Severity.error,
+                  category: IssueCategory.architecture,
+                  message:
+                      'Feature izolasyonu ihlali: "\$currentFeature" özelliği, "\$importedFeature" özelliğinin internal detaylarına (src/ veya private) erişiyor. Import: \$importUri',
+                  filePath: filePath,
+                  line: directive.offset,
+                  suggestion:
+                      "Diğer feature'ların sadece public (dışa açık) arayüzlerini kullanın.",
+                ),
+              );
+            }
+          }
         }
       }
     }

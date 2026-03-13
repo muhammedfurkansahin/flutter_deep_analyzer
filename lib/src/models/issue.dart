@@ -22,6 +22,7 @@ enum IssueCategory {
   raceCondition,
   performance,
   memoryLeak,
+  typeSafety,
 }
 
 /// Tek bir analiz bulgusu.
@@ -90,6 +91,8 @@ class Issue {
         return 'Performans';
       case IssueCategory.memoryLeak:
         return 'Bellek Sızıntısı';
+      case IssueCategory.typeSafety:
+        return 'Tip Güvenliği';
     }
   }
 
@@ -106,6 +109,5 @@ class Issue {
       };
 
   @override
-  String toString() =>
-      '$severityEmoji [$severityLabel] $filePath:$line — $message';
+  String toString() => '$severityEmoji [$severityLabel] $filePath:$line — $message';
 }

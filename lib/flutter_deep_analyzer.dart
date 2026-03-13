@@ -16,6 +16,7 @@ library;
 export 'src/models/issue.dart';
 export 'src/models/analysis_result.dart';
 export 'src/models/score.dart';
+export 'src/models/baseline.dart';
 
 // Analyzers
 export 'src/analyzers/base_analyzer.dart';
@@ -42,3 +43,4 @@ export 'src/reporters/console_reporter.dart';
 export 'src/reporters/json_reporter.dart';
 export 'src/reporters/html_reporter.dart';
 export 'src/reporters/markdown_reporter.dart';
+export 'src/reporters/sonarqube_reporter.dart';

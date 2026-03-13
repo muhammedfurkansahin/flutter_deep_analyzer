@@ -6,12 +6,15 @@ A comprehensive static analysis tool for Flutter and Dart projects. Analyzes arc
 
 | Category | Description | Rules |
 |----------|-------------|:-----:|
-| 🏗️ **Architecture** | God class, layer violation, deep inheritance, large file | 6 |
-| 📊 **Code Quality** | Cyclomatic complexity, long method, deep nesting, magic number | 6 |
-| ✅ **Best Practice** | Naming convention, documentation, print usage, dynamic type | 7 |
-| 🔒 **Security** | Hardcoded secret, HTTP, SQL injection, XSS, insecure storage | 8 |
+| 🏗️ **Architecture** | God class, layer purity, feature isolation, large file | 8 |
+| 🛡️ **Type Safety** | strict-casts, strict-inference, strict-raw-types | 3 |
+| 🔄 **State Mgmt** | Bloc public fields, Riverpod ref usage, GetX onClose | 3 |
+| 📊 **Code Quality** | Cyclomatic complexity, long method, deep nesting | 6 |
+| ✅ **Best Practice** | Naming convention, print usage, dynamic type | 7 |
+| 🔒 **Security** | Hardcoded logic, XSS, insecure storage, async mounted | 9 |
+| ♿ **Accessibility**| Missing semanticLabel, hardcoded strings | 2 |
 | ⚡ **Race Condition** | Unawaited future, async setState, Completer misuse | 6 |
-| 🚀 **Performance** | Build complexity, expensive ops, ListView.builder, MediaQuery | 7 |
+| 🚀 **Performance** | Build complexity, expensive ops, ListView.builder | 7 |
 | 💧 **Memory Leak** | Controller/Stream/Timer dispose missing | 7 |
 
 ## Installation
@@ -41,11 +44,23 @@ dart run flutter_deep_analyzer analyze --category=security .
 # JSON report output
 dart run flutter_deep_analyzer analyze --format=json --output=report.json .
 
+# SonarQube report output (CI/CD)
+dart run flutter_deep_analyzer analyze --format=sonarqube --output=gl-sast-report.json .
+
 # HTML report output
 dart run flutter_deep_analyzer analyze --format=html --output=report.html .
 
 # Markdown report output
 dart run flutter_deep_analyzer analyze --format=markdown --output=report.md .
+
+### Baseline / Technical Debt Management
+
+```bash
+# Create a baseline to ignore existing issues in future runs
+dart run flutter_deep_analyzer analyze --create-baseline .
+
+# Run analysis avoiding previously baselined issues
+dart run flutter_deep_analyzer analyze --use-baseline=baseline.json .
 ```
 
 ### Configuration
@@ -92,6 +107,7 @@ Each category and the overall project are scored from 0 to 100:
 
 - **Console** — Colorful terminal output with emojis and progress bars
 - **JSON** — Machine-readable for CI/CD integration
+- **SonarQube** — DevOps & CI/CD Generic code quality data format importer
 - **HTML** — Modern dark theme report viewable in browser
 - **Markdown** — Visually rich format perfect for GitHub, GitLab, and IDEs
 
@@ -113,12 +129,15 @@ Flutter ve Dart projeleri için kapsamlı statik analiz aracı. Mimari, kod kali
 
 | Kategori | Açıklama | Kural |
 |----------|----------|:-----:|
-| 🏗️ **Mimari** | God class, katman ihlali, derin inheritance, büyük dosya | 6 |
-| 📊 **Kod Kalitesi** | Cyclomatic complexity, uzun metod, derin nesting, magic number | 6 |
-| ✅ **Best Practice** | Naming convention, dökümantasyon, print kullanımı, dynamic | 7 |
-| 🔒 **Güvenlik** | Hardcoded secret, HTTP, SQL injection, XSS, insecure storage | 8 |
-| ⚡ **Race Condition** | Unawaited future, async setState, Completer misuse | 6 |
-| 🚀 **Performans** | Build complexity, expensive ops, ListView.builder, MediaQuery | 7 |
+| 🏗️ **Mimari** | God class, katman ihlali, özellik (feature) izolasyonu | 8 |
+| 🛡️ **Tip Güvenliği** | strict-casts, strict-inference, strict-raw-types | 3 |
+| 🔄 **State Mgmt** | Bloc public field, Riverpod alan kontrolü, GetX onClose | 3 |
+| 📊 **Kod Kalitesi** | Cyclomatic complexity, uzun metod, derin nesting | 6 |
+| ✅ **Best Practice** | İsimlendirme, documentation, print kullanımı, dynamic | 7 |
+| 🔒 **Güvenlik** | Hardcoded secret, HTTP, XSS, insecure storage, async mounted | 9 |
+| ♿ **Erişilebilirlik**| semanticLabel eksiği, hardcoded UI stringleri | 2 |
+| ⚡ **Race Condition** | Unawaited future, async setState, Completer hatası | 6 |
+| 🚀 **Performans** | Build complexity, expensive ops, ListView.builder | 7 |
 | 💧 **Bellek Sızıntısı** | Controller/Stream/Timer dispose eksikliği | 7 |
 
 ## Kurulum
@@ -146,11 +165,23 @@ dart run flutter_deep_analyzer analyze --category=security .
 # JSON rapor çıktısı
 dart run flutter_deep_analyzer analyze --format=json --output=report.json .
 
+# SonarQube rapor çıktısı (CI/CD)
+dart run flutter_deep_analyzer analyze --format=sonarqube --output=gl-sast-report.json .
+
 # HTML rapor çıktısı
 dart run flutter_deep_analyzer analyze --format=html --output=report.html .
 
 # Markdown rapor çıktısı
 dart run flutter_deep_analyzer analyze --format=markdown --output=report.md .
+
+### Baseline / Teknik Borç Yönetimi
+
+```bash
+# Mevcut hataları baseline olarak belirleyip kaydetme
+dart run flutter_deep_analyzer analyze --create-baseline .
+
+# Baseline dosyasını kullanarak daha önce kaydedilen hataları yoksayma
+dart run flutter_deep_analyzer analyze --use-baseline=baseline.json .
 ```
 
 ## Konfigürasyon
@@ -197,95 +228,9 @@ Her kategori ve genel proje 0-100 arası puanlanır:
 
 - **Console** — Renkli, emoji destekli terminal çıktısı
 - **JSON** — CI/CD entegrasyonu için makine tarafından okunabilir
+- **SonarQube** — DevOps sunucularına aktarılmak üzere entegre Sonar formatı
 - **HTML** — Tarayıcıda açılabilir modern dark theme rapor
 - **Markdown** — GitHub, GitLab ve IDE'lerde görüntülemek için çok uygun görsel format
 
 ---
 
-## pub.dev'e Yayınlama
-
-### 1. Ön Hazırlık
-
-```bash
-# pubspec.yaml'ın doğru olduğundan emin olun
-# Gerekli alanlar: name, version, description, repository, environment
-
-# CHANGELOG.md oluşturun
-touch CHANGELOG.md
-
-# LICENSE dosyası oluşturun
-touch LICENSE
-```
-
-### 2. pubspec.yaml Kontrol Listesi
-
-`pubspec.yaml`'da şu alanların dolu olması gerekir:
-
-```yaml
-name: flutter_deep_analyzer
-description: >
-  A comprehensive static analysis tool for Flutter and Dart projects.
-  Analyzes architecture, code quality, best practices, security,
-  race conditions, performance, and memory leaks.
-version: 0.1.0
-repository: https://github.com/KULLANICI_ADINIZ/flutter_deep_analyzer
-homepage: https://github.com/KULLANICI_ADINIZ/flutter_deep_analyzer
-issue_tracker: https://github.com/KULLANICI_ADINIZ/flutter_deep_analyzer/issues
-topics:
-  - analyzer
-  - linter
-  - static-analysis
-  - code-quality
-  - flutter
-```
-
-### 3. Yayınlama Öncesi Kontrol
-
-```bash
-# Dry-run ile yayınlama simülasyonu (gerçekten yayınlamaz)
-dart pub publish --dry-run
-```
-
-Bu komut şunları kontrol eder:
-- `pubspec.yaml` geçerli mi
-- `README.md` var mı
-- `CHANGELOG.md` var mı
-- `LICENSE` var mı
-- Paket boyutu limitleri
-- Bağımlılık sorunları
-
-### 4. Google Hesabı ile Giriş
-
-```bash
-dart pub login
-```
-
-Tarayıcı açılır ve Google hesabınızla giriş yaparsınız.
-
-### 5. Yayınla
-
-```bash
-dart pub publish
-```
-
-> ⚠️ **DİKKAT:** pub.dev'e yayınlanan paketler geri alınamaz! İlk yayından önce `--dry-run` ile kontrol edin.
-
-### 6. Versiyon Güncelleme
-
-Yeni versiyonlarda:
-1. `pubspec.yaml`'da `version`'ı güncelleyin
-2. `CHANGELOG.md`'ye değişiklikleri yazın
-3. `dart pub publish` ile tekrar yayınlayın
-
-### pub.dev Puan Kriterleri
-
-pub.dev otomatik puan verir. Yüksek puan için:
-
-- ✅ `README.md` detaylı olmalı
-- ✅ `CHANGELOG.md` bulunmalı
-- ✅ `LICENSE` dosyası olmalı
-- ✅ Tüm public API'lar dökümante edilmeli (dartdoc)
-- ✅ `dart analyze` sıfır hata
-- ✅ `dart format` uygulanmış olmalı
-- ✅ Platform desteği belirtilmeli
-- ✅ `example/` klasörü ile örnek proje

@@ -241,6 +241,31 @@ class _SecurityVisitor extends RecursiveAstVisitor<void> {
   }
 
   @override
+  void visitMethodDeclaration(MethodDeclaration node) {
+    if (node.body.isAsynchronous) {
+      final bodySource = node.body.toSource();
+      if (bodySource.contains('await ') &&
+          (bodySource.contains('setState(') || bodySource.contains('context.'))) {
+        if (!bodySource.contains('mounted')) {
+          issues.add(
+            Issue(
+              ruleId: 'sec-async-mounted-check',
+              severity: Severity.warning,
+              category: IssueCategory.security,
+              message:
+                  'Asenkron (async) blok icerisinde "await" sonrasında BuildContext veya setState kullanılmış ancak "mounted" kontrolü yapılmamış.',
+              filePath: filePath,
+              line: _getLineNumber(node.offset),
+              suggestion: 'await isleminden sonra if (!mounted) return; kontrolü ekleyin.',
+            ),
+          );
+        }
+      }
+    }
+    super.visitMethodDeclaration(node);
+  }
+
+  @override
   void visitMethodInvocation(MethodInvocation node) {
     final methodName = node.methodName.name;
 
