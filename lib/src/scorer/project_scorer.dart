@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../models/issue.dart';
 import '../models/analysis_result.dart';
 import '../models/score.dart';
@@ -7,7 +9,12 @@ import '../models/score.dart';
 /// Puanlama formülü: 100 - (Σ ağırlıklı_ceza)
 /// Error = -5, Warning = -2, Info = -0.5, Style = -0.25
 /// Minimum puan: 0
+///
+/// Büyük kod tabanlarında bilgi düzeyindeki gürültünün skoru gereksiz düşürmemesi için,
+/// analiz edilen dosya sayısı [referansDosyaSayısı]'ı aştığında ceza alt ölçeklenir (DCM benzeri bağlam).
 class ProjectScorer {
+  /// Bu dosya sayısına kadar ölçekleme uygulanmaz; üzerinde ceza `sqrt(ref/n)` ile azaltılır.
+  static const int referansDosyaSayısı = 40;
   /// Issue severity'lerine göre ceza ağırlıkları
   static const _penalties = {
     Severity.error: 5.0,
@@ -18,11 +25,12 @@ class ProjectScorer {
 
   /// Analiz sonuçlarını puanla.
   ProjectScore score(AnalysisResult result) {
+    final scale = _largeProjectPenaltyScale(result.totalFilesAnalyzed);
     final categoryScores = <CategoryScore>[];
 
     for (final category in IssueCategory.values) {
       final categoryIssues = result.byCategory(category);
-      final categoryScore = _calculateCategoryScore(category, categoryIssues);
+      final categoryScore = _calculateCategoryScore(category, categoryIssues, scale);
       categoryScores.add(categoryScore);
     }
 
@@ -32,7 +40,18 @@ class ProjectScorer {
     return ProjectScore(overallScore: overallScore, categoryScores: categoryScores);
   }
 
-  CategoryScore _calculateCategoryScore(IssueCategory category, List<Issue> issues) {
+  /// Çok dosyalı projelerde toplam cezayı düşürür; yapı sağlam olsa da çok sayıda küçük uyarıda skoru daha anlamlı yapar.
+  double _largeProjectPenaltyScale(int filesAnalyzed) {
+    final n = math.max(1, filesAnalyzed);
+    if (n <= referansDosyaSayısı) return 1.0;
+    return math.sqrt(referansDosyaSayısı / n);
+  }
+
+  CategoryScore _calculateCategoryScore(
+    IssueCategory category,
+    List<Issue> issues,
+    double penaltyScale,
+  ) {
     var totalPenalty = 0.0;
 
     final errors = issues.where((i) => i.severity == Severity.error).length;
@@ -44,6 +63,8 @@ class ProjectScorer {
     totalPenalty += warnings * _penalties[Severity.warning]!;
     totalPenalty += infos * _penalties[Severity.info]!;
     totalPenalty += styles * _penalties[Severity.style]!;
+
+    totalPenalty *= penaltyScale;
 
     // Puan: 100 - ceza, minimum 0
     final score = (100 - totalPenalty).clamp(0.0, 100.0);
@@ -71,6 +92,7 @@ class ProjectScorer {
       IssueCategory.raceCondition: 1.3,
       IssueCategory.performance: 1.1,
       IssueCategory.memoryLeak: 1.4,
+      IssueCategory.typeSafety: 1.35,
     };
 
     var weightedSum = 0.0;
