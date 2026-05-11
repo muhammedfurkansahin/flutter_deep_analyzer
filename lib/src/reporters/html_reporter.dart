@@ -5,7 +5,7 @@ import '../scorer/project_scorer.dart';
 import 'base_reporter.dart';
 import 'html_report_aggregates.dart';
 
-/// HTML formatında rapor üreten reporter (DCM tarzı paneller; otomatik düzeltme/quick fix yok).
+/// HTML formatinda rapor üreten reporter (DCM tarzi paneller; otomatik düzeltme/quick fix yok).
 class HtmlReporter extends BaseReporter {
   final String language;
 
@@ -33,7 +33,7 @@ class HtmlReporter extends BaseReporter {
 
     buffer.writeln('<div class="container">');
 
-    // Üst gezinme (DCM tarzı çok bölümlü rapor)
+    // Üst gezinme (DCM tarzi çok bölümlü rapor)
     buffer.writeln('<nav class="report-nav" aria-label="Report sections">');
     buffer.writeln(isEn
         ? '<a href="#overview">Overview</a>'
@@ -43,7 +43,7 @@ class HtmlReporter extends BaseReporter {
         : '<a href="#metrics">Metrikler</a>');
     buffer.writeln(isEn
         ? '<a href="#distribution">Distribution</a>'
-        : '<a href="#distribution">Dağılım</a>');
+        : '<a href="#distribution">Dağilim</a>');
     buffer.writeln(isEn
         ? '<a href="#directories">Directories</a>'
         : '<a href="#directories">Dizinler</a>');
@@ -62,7 +62,7 @@ class HtmlReporter extends BaseReporter {
         '<p class="path">${isEn ? 'Project' : 'Proje'} · ${_escapeHtml(result.projectPath)}</p>');
     buffer.writeln(isEn
         ? '<p class="hint">This report lists findings only — apply fixes in your editor as you prefer (no automatic quick-fixes).</p>'
-        : '<p class="hint">Bu rapor yalnızca bulguları listeler; düzeltmeleri editörünüzde siz uygularsınız (otomatik quick-fix yok).</p>');
+        : '<p class="hint">Bu rapor yalnizca bulgulari listeler; düzeltmeleri editörünüzde siz uygularsiniz (otomatik quick-fix yok).</p>');
     buffer.writeln(
         '<p class="scale-hint">${_scaleExplanation(result.totalFilesAnalyzed, isEn)}</p>');
     buffer.writeln('</header>');
@@ -79,7 +79,7 @@ class HtmlReporter extends BaseReporter {
     buffer.writeln('<div class="summary-cards">');
     _writeSummaryCard(buffer, isEn ? 'Errors' : 'Hatalar', '${result.errorCount}', 'error',
         filterable: true);
-    _writeSummaryCard(buffer, isEn ? 'Warnings' : 'Uyarılar', '${result.warningCount}', 'warning',
+    _writeSummaryCard(buffer, isEn ? 'Warnings' : 'Uyarilar', '${result.warningCount}', 'warning',
         filterable: true);
     _writeSummaryCard(buffer, isEn ? 'Info' : 'Bilgi', '${result.infoCount}', 'info',
         filterable: true);
@@ -100,7 +100,7 @@ class HtmlReporter extends BaseReporter {
     buffer.writeln('<div class="metric-grid">');
     _writeMetricTile(
       buffer,
-      isEn ? 'Issues per scanned file' : 'Taranan dosya başına bulgu',
+      isEn ? 'Issues per scanned file' : 'Taranan dosya başina bulgu',
       agg.totalIssues > 0 && result.totalFilesAnalyzed > 0
           ? agg.issuesPerAnalyzedFile(result.totalFilesAnalyzed).toStringAsFixed(2)
           : '0',
@@ -108,7 +108,7 @@ class HtmlReporter extends BaseReporter {
     );
     _writeMetricTile(
       buffer,
-      isEn ? 'Distinct rule IDs' : 'Farklı kural sayısı',
+      isEn ? 'Distinct rule IDs' : 'Farkli kural sayisi',
       '${agg.distinctRules}',
       isEn ? 'unique rules triggered' : 'tetiklenen benzersiz kural',
     );
@@ -121,10 +121,10 @@ class HtmlReporter extends BaseReporter {
     buffer.writeln('</div>');
     buffer.writeln('</section>');
 
-    // Kategori kartları + Dağılım
+    // Kategori kartlari + Dağilim
     buffer.writeln('<section class="categories-section" id="distribution">');
     buffer.writeln(
-        '<h2>${isEn ? '📈 Categories & severity mix' : '📈 Kategoriler ve şiddet dağılımı'}</h2>');
+        '<h2>${isEn ? '📈 Categories & severity mix' : '📈 Kategoriler ve şiddet dağilimi'}</h2>');
     buffer.writeln('<div class="two-col">');
     buffer.writeln('<div class="donut-wrap" aria-hidden="true">');
     buffer.writeln('<div class="donut-hole"></div>');
@@ -134,7 +134,7 @@ class HtmlReporter extends BaseReporter {
     buffer.writeln('</div>');
     buffer.writeln('<div class="legend">');
     buffer.writeln(_legendRow(isEn ? 'Error' : 'Hata', result.errorCount, '#ef4444'));
-    buffer.writeln(_legendRow(isEn ? 'Warning' : 'Uyarı', result.warningCount, '#eab308'));
+    buffer.writeln(_legendRow(isEn ? 'Warning' : 'Uyari', result.warningCount, '#eab308'));
     buffer.writeln(_legendRow(isEn ? 'Info' : 'Bilgi', result.infoCount, '#3b82f6'));
     buffer.writeln(_legendRow(isEn ? 'Style' : 'Stil', result.styleCount, '#94a3b8'));
     buffer.writeln('</div>');
@@ -156,7 +156,7 @@ class HtmlReporter extends BaseReporter {
     }
     if (agg.issuesByCategory.values.every((v) => v == 0)) {
       buffer.writeln(
-          '<p class="empty-note">${isEn ? 'No issues in this run.' : 'Bu çalıştırmada bulgu yok.'}</p>');
+          '<p class="empty-note">${isEn ? 'No issues in this run.' : 'Bu çaliştirmada bulgu yok.'}</p>');
     }
     buffer.writeln('</div>');
 
@@ -172,7 +172,7 @@ class HtmlReporter extends BaseReporter {
       buffer.writeln('<section class="panel" id="directories">');
       buffer.writeln(
           '<h2>${isEn ? '📂 Hot directories (first path segments)' : '📂 Yoğun dizinler (ilk path segmentleri)'}</h2>');
-      buffer.writeln('<p class="panel-desc">${isEn ? 'Grouped by the first three path segments of each file — useful on large monorepos.' : 'Her dosyanın ilk üç path segmentine göre gruplanır — büyük projelerde yoğun alanları gösterir.'}</p>');
+      buffer.writeln('<p class="panel-desc">${isEn ? 'Grouped by the first three path segments of each file — useful on large monorepos.' : 'Her dosyanin ilk üç path segmentine göre gruplanir — büyük projelerde yoğun alanlari gösterir.'}</p>');
       buffer.writeln('<div class="table-scroll">');
       buffer.writeln('<table class="data-table">');
       buffer.writeln('<thead><tr>');
@@ -195,12 +195,12 @@ class HtmlReporter extends BaseReporter {
       buffer.writeln('</section>');
     }
 
-    // En sık tetiklenen kurallar
+    // En sik tetiklenen kurallar
     final topRules = agg.topRules(limit: 30);
     if (topRules.isNotEmpty) {
       buffer.writeln('<section class="panel" id="rules">');
       buffer.writeln(
-          '<h2>${isEn ? '⚙️ Top rules (by count)' : '⚙️ En sık tetiklenen kurallar'}</h2>');
+          '<h2>${isEn ? '⚙️ Top rules (by count)' : '⚙️ En sik tetiklenen kurallar'}</h2>');
       buffer.writeln('<div class="table-scroll">');
       buffer.writeln('<table class="data-table rules-table">');
       buffer.writeln('<thead><tr>');
@@ -222,11 +222,11 @@ class HtmlReporter extends BaseReporter {
       buffer.writeln('</section>');
     }
 
-    // Detaylı Sorunlar
+    // Detayli Sorunlar
     if (result.issues.isNotEmpty) {
       buffer.writeln('<section class="issues-section" id="issues">');
       buffer.writeln(
-          '<h2>${isEn ? 'Detailed issues' : 'Detaylı sorunlar'} (${result.issues.length})</h2>');
+          '<h2>${isEn ? 'Detailed issues' : 'Detayli sorunlar'} (${result.issues.length})</h2>');
 
       final issuesByFile = <String, List<Issue>>{};
       for (final issue in result.issues) {
@@ -242,7 +242,7 @@ class HtmlReporter extends BaseReporter {
         buffer.writeln('<th>${isEn ? 'Sev.' : 'Sev.'}</th>');
         buffer.writeln('<th>${isEn ? 'Category' : 'Kategori'}</th>');
         buffer.writeln('<th>${isEn ? 'Rule' : 'Kural'}</th>');
-        buffer.writeln('<th>${isEn ? 'Line' : 'Satır'}</th>');
+        buffer.writeln('<th>${isEn ? 'Line' : 'Satir'}</th>');
         buffer.writeln('<th>${isEn ? 'Message' : 'Mesaj'}</th>');
         buffer.writeln('<th>${isEn ? 'Suggestion' : 'Öneri'}</th>');
         buffer.writeln('</tr></thead>');
@@ -273,7 +273,7 @@ class HtmlReporter extends BaseReporter {
       buffer.writeln('<section class="no-issues">');
       buffer.writeln(isEn
           ? '<h2>✅ No issues in this run.</h2>'
-          : '<h2>✅ Bu çalıştırmada sorun yok.</h2>');
+          : '<h2>✅ Bu çaliştirmada sorun yok.</h2>');
       buffer.writeln('</section>');
     }
 
@@ -291,14 +291,14 @@ class HtmlReporter extends BaseReporter {
   }
 
   String _scaleExplanation(int files, bool isEn) {
-    if (files <= ProjectScorer.referansDosyaSayısı) {
+    if (files <= ProjectScorer.referansDosyaSayisi) {
       return isEn
-          ? 'Scoring uses full penalty weights for this codebase size (≤ ${ProjectScorer.referansDosyaSayısı} scanned files).'
-          : 'Puanlama bu kod tabanı boyutunda tam ceza ağırlıkları kullanır (≤ ${ProjectScorer.referansDosyaSayısı} taranan dosya).';
+          ? 'Scoring uses full penalty weights for this codebase size (≤ ${ProjectScorer.referansDosyaSayisi} scanned files).'
+          : 'Puanlama bu kod tabani boyutunda tam ceza ağirliklari kullanir (≤ ${ProjectScorer.referansDosyaSayisi} taranan dosya).';
     }
     return isEn
-        ? 'Large-project scaling active: penalties are scaled by √(ref/n) with ref=${ProjectScorer.referansDosyaSayısı} so scores reflect density, not raw volume alone.'
-        : 'Büyük proje ölçeklemesi açık: cezalar √(ref/n) ile düşürülür (ref=${ProjectScorer.referansDosyaSayısı}); skor yalnızca ham sayıya değil yoğunluğa yakınsar.';
+        ? 'Large-project scaling active: penalties are scaled by √(ref/n) with ref=${ProjectScorer.referansDosyaSayisi} so scores reflect density, not raw volume alone.'
+        : 'Büyük proje ölçeklemesi açik: cezalar √(ref/n) ile düşürülür (ref=${ProjectScorer.referansDosyaSayisi}); skor yalnizca ham sayiya değil yoğunluğa yakinsar.';
   }
 
   String _legendRow(String label, int count, String color) {
@@ -353,7 +353,7 @@ class HtmlReporter extends BaseReporter {
         case IssueCategory.performance:
           return 'Performans';
         case IssueCategory.memoryLeak:
-          return 'Bellek sızıntısı';
+          return 'Bellek sizintisi';
         case IssueCategory.typeSafety:
           return 'Tip güvenliği';
       }

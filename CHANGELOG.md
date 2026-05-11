@@ -44,3 +44,10 @@
 - **Type Safety Analyzer**: Validates `strict-casts`, `strict-inference` directly checking the `analysis_options.yaml` tree.
 - **State Management Anti-patterns**: Detects unideal patterns in Bloc, Riverpod & GetX.
 - **Accessibility & Security Rules**: Detects `semanticLabel` usage, checks `!mounted` returns for async blocks in BuildContext boundaries.
+
+## 1.0.6
+
+- **HTML raporu (DCM tarzı paneller)**: Üstte yapışkan bölüm gezintisi; şiddet dağılımı için donut grafik ve açıklama; kategori bazlı bulgu çubukları; taranan dosya başına bulgu, benzersiz kural sayısı ve toplam bulgu gibi yoğunluk metrikleri; ilk üç path segmentine göre gruplanan yoğun dizinler tablosu; en sık tetiklenen kurallar tablosu.
+- **HTML özet modeli**: `html_report_aggregates.dart` ile kural/kategori/dizin bazlı istatistikler tek yerden hesaplanıyor.
+- **HTML detayları**: Özet kartlarına etkilenen dosya sayısı; detaylı sorun tablosuna kategori sütunu, satır: sütun gösterimi ve kullanıcı girdisi için geliştirilmiş HTML kaçışı; quick-fix olmadığına dair TR/EN ipucu; büyük proje skor ölçeklemesi için raporda kısa açıklama metni.
+- **Skorlama**: 40’tan fazla taranan dosyada toplam ceza `√(ref/n)` ile ölçeklenir (`ref = 40`); böylece çok dosyalı projelerde skor yoğunluğu yansıtır. `typeSafety` kategorisi için ek ağırlık (1.35) eklendi.
